@@ -2,7 +2,7 @@ var test = require('tape')
 var { evalAst, makeAPI } = require('./interpreter')
 
 test('interpreter', t => {
-  t.plan(14)
+  t.plan(15)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -61,6 +61,21 @@ test('interpreter', t => {
     ),
     ['atom', 15],
     'multiparameter procedure declaration / aplication'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['process',
+        ['def',
+          ['sqrt', 'x'],
+          ['if', ]
+          ['sqrt-iter', 'x', 'y'],
+        ],
+        ['sum', 7, 8],
+      ]
+    ),
+    ['atom', 15],
+    'procedure recursion'
   )
 
   t.deepEqual(

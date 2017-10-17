@@ -1,4 +1,4 @@
-const stopChars = ['(', ')', ' ', '\n', '\t']
+const stopChars = ['(', ')', '[', ']', ' ', '\n', '\t']
 const avoidChars = [' ', '\n', '\t']
 const stringDelimiters = [`'`, '"', '`']
 

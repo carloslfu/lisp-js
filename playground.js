@@ -2,10 +2,10 @@ const { run } = require('./index')
 
 const code = `
   (process
-    (def a 'log')
-    (def b 'E')
-    (Math a (Math b))
-  )
+    (def
+      a
+      [+  1 2]
+    )
 `
 
 let result = run({

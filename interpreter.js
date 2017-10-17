@@ -12,7 +12,7 @@ const exp = api => exp => {
     if (value !== undefined) {
       return value
     } else {
-      throw `There are no name '${exp}' in the scope`
+      return api.evalAst(['throw', `"There are no name '${exp}' in the scope"`])
     }
   }
 }
@@ -26,7 +26,7 @@ const evalAst = api => ast => {
   let op = ast[0]
   let args = ast.slice(1, ast.length)
   if (!op) {
-    throw 'Invalid operation in: ' + ast
+    return api.evalAst(['throw', `'Invalid operation in: ${ast}'`])
   }
   let fn = api.getValue(op)
   if (fn !== undefined && fn[0] === 'fn') {
@@ -36,7 +36,7 @@ const evalAst = api => ast => {
   } else if (atoms[op]) {
     return atoms[op](api, args)
   } else {
-    throw 'The operation is not defined: ' + op
+    return api.evalAst(['throw', `'The operation is not defined: ${op}'`])
   }
 }
 
@@ -47,7 +47,7 @@ function evaluateFn (api, name, [params, body], args) {
     if (argsVal[i] !== undefined) {
       api.setValue(params[i], argsVal[i])
     } else {
-      throw `Missing argument '${params[i]}' in function '${name}'`
+      return api.evalAst(['throw', `"Missing argument '${params[i]}' in function '${name}'"`])
     }
   }
   let result = api.evalAst(body)
@@ -112,11 +112,14 @@ const atoms = {
       if (arg instanceof Array) {
         result = api.evalAst(arg)
       } else {
-        throw 'process only can have lists as arguments'
+        return api.evalAst(['throw', `'process only can have lists as arguments'`])
       }
     }
     api._patomscope()
     return result
+  },
+  throw: (api, args) => {
+    throw args.map(a => api.exp(a)[1]).join(' ')
   },
   // ---- Special Forms
   // constant definition

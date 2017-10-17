@@ -1,15 +1,17 @@
 {
-  "name": "scheme-js-compiler",
+  "name": "lisp-js-compiler",
   "version": "0.0.1",
-  "description": "JavaScript compiler for Scheme language",
+  "description": "JavaScript compiler for Lisp language",
   "main": "index.js",
   "scripts": {
     "test": "node test"
   },
   "keywords": [
     "JavaScript",
-    "Scheme",
-    "Compiler"
+    "Lisp",
+    "Compiler",
+    "Interpreter",
+    "WebAssembly"
   ],
   "author": "Carlos Galarza <carloslfu@gmail.com>",
   "license": "MIT",
