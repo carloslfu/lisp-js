@@ -158,7 +158,7 @@ const atoms = {
   // ----  
   // Mathematical
   '+': (api, args) => ['atom', args.reduce((a, n) => a + api.exp(n)[1], 0)],
-  '-': (api, args) => ['atom', args.slice(1).reduce((a, n) => a - api.exp(n)[1], args[0])],
+  '-': (api, args) => ['atom', args.slice(1).reduce((a, n) => a - api.exp(n)[1], api.exp(args[0])[1])],
   '*': (api, args) => ['atom', args.reduce((a, n) => a * api.exp(n)[1], 1)],
   '/': (api, args) => ['atom', api.exp(args[0])[1] / args.slice(1).reduce((a, n) => a * api.exp(n)[1], 1)],
   // Logical

@@ -2,7 +2,7 @@ var test = require('tape')
 var { evalAst, makeAPI } = require('./interpreter')
 
 test('interpreter', t => {
-  t.plan(15)
+  t.plan(16)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -63,20 +63,27 @@ test('interpreter', t => {
     'Multiparameter procedure declaration / application'
   )
 
-  // t.deepEqual(
-  //   evalAst(makeAPI({}))(
-  //     ['process',
-  //       ['def',
-  //         ['sqrt', 'x'],
-  //         ['if', ]
-  //         ['sqrt-iter', 'x', 'y'],
-  //       ],
-  //       ['sum', 7, 8],
-  //     ]
-  //   ),
-  //   ['atom', 15],
-  //   'Procedure recursion'
-  // )
+  t.deepEqual(
+    evalAst(makeAPI({ log: (api, args) => console.log.apply(null, args.map(a => api.exp(a)[1])) }))(
+      ['process',
+        ['def',
+          ['sqrtIter', 'x', 'guess'],
+          ['if',
+            ['=', ['Math', '.abs', ['-', 'x', ['*', 'guess', 'guess']]], 0],
+            'guess',
+            ['sqrtIter', 'x', ['/', ['+', 'guess', ['/', 'x', 'guess']], '2']],
+          ],
+        ],
+        ['def',
+          ['sqrt', 'x'],
+          ['sqrtIter', 'x', '1'],
+        ],
+        ['sqrt', 9],
+      ]
+    ),
+    ['atom', 3],
+    'Procedure recursion'
+  )
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', ['*', '1', '2', '3'], '2', ['/', '27', '3', '3']]),
@@ -113,7 +120,6 @@ test('interpreter', t => {
   )
 
   // Special forms
-  debugger
   t.deepEqual(
     evalAst(makeAPI({}))(
       ['process',
