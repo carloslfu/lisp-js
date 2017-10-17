@@ -3,10 +3,18 @@ const { run } = require('./index')
 const code = `
   (process
     (def
-      a
-      [+  1 2]
+      [sqrtIter x guess]
+      (if
+        [= (Math .abs (- x (* guess guess))) 0]
+        guess
+        (sqrtIter x (/ (+ guess (/ x guess)) 2))
+      )
     )
-    a
+    (def
+      (sqrt x)
+      (sqrtIter x 1)
+    )
+    (sqrt 9)
   )
 `
 
