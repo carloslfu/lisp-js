@@ -6,6 +6,8 @@ const code = `
       a
       [+  1 2]
     )
+    a
+  )
 `
 
 let result = run({

@@ -1,8 +1,14 @@
-const stopChars = ['(', ')', '[', ']', ' ', '\n', '\t']
+const openListDelimiters = ['(', '[']
+const closeListDelimiters = [')', ']']
+const listDelimiters = [
+  ...openListDelimiters,
+  ...closeListDelimiters,
+]
+const stopChars = [...listDelimiters, ' ', '\n', '\t']
 const avoidChars = [' ', '\n', '\t']
-const stringDelimiters = [`'`, '"', '`']
+const stringDelimiters = [`'`, '"']
 
-exports.tokenize = code => {
+const tokenize = code => {
   let tokens = []
   let chars = code.split('')
   let token = ''
@@ -27,4 +33,12 @@ exports.tokenize = code => {
   }
   tokens = tokens
   return tokens
+}
+
+module.exports = {
+  openListDelimiters,
+  closeListDelimiters,
+  listDelimiters,
+  stringDelimiters,
+  tokenize,
 }

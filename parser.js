@@ -1,17 +1,18 @@
-// node can be a list, atom, number, string
+const { openListDelimiters, closeListDelimiters } = require('./tokenizer')
 
+// A node can be a list, atom, number, string
 function parse (tokens) {
   let list
   let path = []
   for (let i = 0, token; token = tokens[i]; i++) {
-    if (token === '(') {
+    if (openListDelimiters.indexOf(token) !== -1) {
       if (!list) {
         list = []
       } else {
         setPath([], path, list)
       }
       path.push(0)
-    } else if (token === ')') {
+    } else if (closeListDelimiters.indexOf(token) !== -1) {
       path.pop()
       path[path.length - 1]++
     } else {

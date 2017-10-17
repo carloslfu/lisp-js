@@ -11,9 +11,9 @@ test('tokenizer', function (t) {
   )
 
   t.deepEqual(
-    tokenize(`(  ++ ( aa/sd  'string  :D e$ref'  bs c)  ( aasd b&  +) ( [aasd& 123] asdasd  ?asd< ) )`),
+    tokenize(`(  ++ ( aa/sd  'string  :D e$ref'  bs c)  "asd asd's'%& ds"  ( aasd b&  +) ( [aasd& 123] asdasd  ?asd< ) )`),
     [
-      '(', '++', '(', 'aa/sd', `'string  :D e$ref'`, 'bs', 'c', ')' ,
+      '(', '++', '(', 'aa/sd', `'string  :D e$ref'`, 'bs', 'c', ')' , `"asd asd's'%& ds"`,
       '(', 'aasd', 'b&', '+', ')', '(', '[', 'aasd&', '123', ']', 'asdasd', '?asd<', ')', ')',
     ],
     'complex expression'

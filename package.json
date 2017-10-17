@@ -1,7 +1,7 @@
 {
   "name": "lisp-js-compiler",
   "version": "0.0.1",
-  "description": "JavaScript compiler for Lisp language",
+  "description": "JavaScript compiler / interpreter for Lisp language",
   "main": "index.js",
   "scripts": {
     "test": "node test"

@@ -1,3 +1,4 @@
+const { stringDelimiters } = require('./tokenizer')
 
 // evaluate a primitive expression
 const exp = api => exp => {
@@ -5,7 +6,10 @@ const exp = api => exp => {
     return api.evalAst(exp)
   } else if (!isNaN(exp)) { // is a number
     return ['atom', parseFloat(exp)]
-  } else if (exp[0] === '\'' && exp[exp.length - 1] === '\'') {
+  } else if (
+    stringDelimiters.indexOf(exp[0]) !== -1
+    && stringDelimiters.indexOf(exp[exp.length - 1]) !== -1
+  ) {
     return ['atom', exp.slice(1, exp.length - 1)]
   } else { // constant
     let value = api.getValue(exp)
@@ -108,9 +112,11 @@ const atoms = {
   process: (api, args) => {
     let result
     api._pushScope()
-    for (let i = 0, arg; arg = args[i]; i++) {
+    for (let i = 0, len = args.length, arg; arg = args[i]; i++) {
       if (arg instanceof Array) {
         result = api.evalAst(arg)
+      } else if (i === len - 1) {
+        result = api.exp(arg)   
       } else {
         return api.evalAst(['throw', `'process only can have lists as arguments'`])
       }

@@ -7,19 +7,19 @@ test('interpreter', t => {
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
     ['atom', 6],
-    'simple expression'
+    'Simple expression'
   )
   
   t.deepEqual(
     evalAst(makeAPI({}))(['*', '2', '3', ['-', '3', '4'], '2', ['/', '1', '2']]),
     ['atom', -6],
-    'composed expression'
+    'Composed expression'
   )
 
   t.deepEqual(
     evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(['*', 'x', 'y', ['-', '3', '4'], '2', ['/', '1', '2']]),
     ['atom', -15],
-    'composed expression with env constants'
+    'Composed expression with env constants'
   )
 
   t.deepEqual(
@@ -32,7 +32,7 @@ test('interpreter', t => {
       ]
     ),
     ['atom', 17],
-    'process expression with env constants'
+    'Process expression with env constants'
   )
 
   t.deepEqual(
@@ -46,7 +46,7 @@ test('interpreter', t => {
       ]
     ),
     ['atom', 8],
-    'procedure declaration / aplication'
+    'Procedure declaration / application'
   )
 
   t.deepEqual(
@@ -60,23 +60,23 @@ test('interpreter', t => {
       ]
     ),
     ['atom', 15],
-    'multiparameter procedure declaration / aplication'
+    'Multiparameter procedure declaration / application'
   )
 
-  t.deepEqual(
-    evalAst(makeAPI({}))(
-      ['process',
-        ['def',
-          ['sqrt', 'x'],
-          ['if', ]
-          ['sqrt-iter', 'x', 'y'],
-        ],
-        ['sum', 7, 8],
-      ]
-    ),
-    ['atom', 15],
-    'procedure recursion'
-  )
+  // t.deepEqual(
+  //   evalAst(makeAPI({}))(
+  //     ['process',
+  //       ['def',
+  //         ['sqrt', 'x'],
+  //         ['if', ]
+  //         ['sqrt-iter', 'x', 'y'],
+  //       ],
+  //       ['sum', 7, 8],
+  //     ]
+  //   ),
+  //   ['atom', 15],
+  //   'Procedure recursion'
+  // )
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', ['*', '1', '2', '3'], '2', ['/', '27', '3', '3']]),
@@ -113,6 +113,21 @@ test('interpreter', t => {
   )
 
   // Special forms
+  debugger
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['process',
+        ['def', 'x', ['process',
+          ['def', 'a', 2],
+          ['def', 'b', ['+', 'a', 10]],
+          'b',
+        ]],
+        ['+', 'x', 8],
+      ]
+    ),
+    ['atom', 20],
+    'Process application / definition'
+  )
 
   t.deepEqual(
     evalAst(makeAPI({}))(
