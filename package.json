@@ -1,0 +1,19 @@
+{
+  "name": "scheme-js-compiler",
+  "version": "0.0.1",
+  "description": "JavaScript compiler for Scheme language",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test"
+  },
+  "keywords": [
+    "JavaScript",
+    "Scheme",
+    "Compiler"
+  ],
+  "author": "Carlos Galarza <carloslfu@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "tape": "^4.8.0"
+  }
+}
