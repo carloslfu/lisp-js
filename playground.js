@@ -11,7 +11,7 @@ const code = `
       )
     )
     (def
-      (sqrt x)
+      [sqrt x]
       (sqrtIter x 1)
     )
     (sqrt 9)
