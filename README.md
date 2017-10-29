@@ -31,7 +31,7 @@ let result = run({
 console.log(result)
 ```
 
-# Roadmap
+## Roadmap
 
 - Improve README and docs
 - Make the build env with FuseBox :fire:
@@ -39,3 +39,8 @@ console.log(result)
 - Make an example
 - Implement code generation
 - Implement a code generator for WebAssembly
+
+## Goals
+
+- Build a language for Fractal over JS
+- Be simple and performant
