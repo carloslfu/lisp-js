@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "removeComments": false,
+        "noUnusedLocals": true,
+        "lib": ["dom", "es5", "es2015", "scripthost"],
+        "typeRoots": [
+        "./node_modules/@types"
+        ]
+    },
+    "formatCodeOptions": {
+        "indentSize": 2,
+        "tabSize": 2
+    },
+    "files": [
+        "app/index.ts",
+        "server/index.ts",
+        "app/service-worker.ts",
+        "typings/index.d.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
