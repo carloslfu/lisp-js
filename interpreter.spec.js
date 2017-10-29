@@ -2,7 +2,7 @@ var test = require('tape')
 var { evalAst, makeAPI } = require('./interpreter')
 
 test('interpreter', t => {
-  t.plan(16)
+  t.plan(19)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -23,6 +23,17 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['process',
+        ['def', ['a1', 'x'], 'x'],
+        [['cat', '"a"', '"1"'], 11],
+      ],
+    ),
+    ['atom', 11],
+    'Computed operation name'
+  )
+
+  t.deepEqual(
     evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(
       ['process',
         ['def', 'a', '2'],
@@ -33,6 +44,17 @@ test('interpreter', t => {
     ),
     ['atom', 17],
     'Process expression with env constants'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['process',
+        ['def', ['identity', 'x'], 'x'],
+        ['identity', 7],
+      ]
+    ),
+    ['atom', 7],
+    'Identity procedure definition / application'
   )
 
   t.deepEqual(
@@ -64,7 +86,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({ log: (api, args) => console.log.apply(null, args.map(a => api.exp(a)[1])) }))(
+    evalAst(makeAPI({}))(
       ['process',
         ['def',
           ['sqrtIter', 'x', 'guess'],
@@ -184,6 +206,14 @@ test('interpreter', t => {
     ),
     ['atom', 15],
     'Conditional - else'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      [['lambda', ['x', 'y'], ['+', 'x', 'y']], 23, 34],
+    ),
+    ['atom', 57],
+    'Lambda definition and application'
   )
 
 })

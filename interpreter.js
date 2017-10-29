@@ -32,6 +32,15 @@ const evalAst = api => ast => {
   if (!op) {
     return api.evalAst(['throw', `'Invalid operation in: ${ast}'`])
   }
+  if (op instanceof Array) { // op expression
+    op = api.exp(op)
+    // lambda evaluation
+    if (op[0] === 'fn') {
+      return evaluateFn(api, 'lambda', op[1], args)
+    } else if (op[0] === 'atom') {
+      op = op[1]
+    }
+  }
   let fn = api.getValue(op)
   if (fn !== undefined && fn[0] === 'fn') {
     return evaluateFn(api, op, fn[1], args)
@@ -54,8 +63,8 @@ function evaluateFn (api, name, [params, body], args) {
       return api.evalAst(['throw', `"Missing argument '${params[i]}' in function '${name}'"`])
     }
   }
-  let result = api.evalAst(body)
-  api._patomscope()
+  let result = api.exp(body)
+  api._popScope()
   return result
 }
 
@@ -86,7 +95,7 @@ const makeAPI = env => {
       ...env,
     },
     _pushScope: () => stack.push({}),
-    _patomscope: () => stack.pop(),
+    _popScope: () => stack.pop(),
   }
   api.evalAst = evalAst(api)
   api.exp = exp(api)
@@ -121,20 +130,24 @@ const atoms = {
         return api.evalAst(['throw', `'process only can have lists as arguments'`])
       }
     }
-    api._patomscope()
+    api._popScope()
     return result
   },
   throw: (api, args) => {
     throw args.map(a => api.exp(a)[1]).join(' ')
   },
   // ---- Special Forms
-  // constant definition
+  // Constant definition
   def: (api, [name, exp]) => {
     if (name instanceof Array) {
       api.setValue(name[0], ['fn', [name.slice(1), exp]])
     } else {
       api.setValue(name, api.exp(exp))
     }
+  },
+  // Lambda definition
+  lambda: (api, [args, body]) => {
+    return ['fn', [args, body]]
   },
   // JS Math
   Math: (api, args) => {
@@ -171,4 +184,6 @@ const atoms = {
   'not': (api, args) => ['atom', !api.exp(args[0])[1]],
   'and': (api, args) => ['atom', args.reduce((a, n) => a && api.exp(n)[1], true)],
   'or': (api, args) => ['atom',  args.reduce((a, n) => a || api.exp(n)[1], false)],
+  // Strings
+  'cat': (api, args) => ['atom', args.reduce((a, n) => a + api.exp(n)[1], '')],
 }

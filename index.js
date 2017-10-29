@@ -6,8 +6,9 @@ function getAst (code) {
   return parse(tokenize(code))
 }
 
-function run (env, code) {
-  return evalAst(makeAPI(env))(getAst(code))
+const run = env => {
+  let _evalAst = evalAst(makeAPI(env))
+  return code => _evalAst(getAst(code))
 }
 
 module.exports = {
