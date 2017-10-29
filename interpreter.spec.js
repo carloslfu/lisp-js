@@ -2,7 +2,7 @@ var test = require('tape')
 var { evalAst, makeAPI } = require('./interpreter')
 
 test('interpreter', t => {
-  t.plan(19)
+  t.plan(21)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -214,6 +214,34 @@ test('interpreter', t => {
     ),
     ['atom', 57],
     'Lambda definition and application'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      [
+        ['.',
+          ['lambda', ['x'], ['+', 'x', '1']],
+          ['lambda', ['x'], ['*', 'x', '3']],
+        ],
+        3
+      ],
+    ),
+    ['atom', 10],
+    'Function composition operator'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      [
+        ['pipe',
+          ['lambda', ['x'], ['+', 'x', '1']],
+          ['lambda', ['x'], ['*', 'x', '3']],
+        ],
+        3
+      ],
+    ),
+    ['atom', 12],
+    'Inverse function composition operator'
   )
 
 })

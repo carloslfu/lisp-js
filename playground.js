@@ -1,10 +1,10 @@
 const { run } = require('./index')
 
 const code = `
-  (process
-    (def (a1 x) x)
-    ((cat 'a' '1') 11)
-  )
+  ((.
+    (lambda (x) (+ x 1))
+    (lambda (x) (* x 3))
+  ) 3)
 `
 
 let result = run({

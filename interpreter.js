@@ -146,8 +146,18 @@ const atoms = {
     }
   },
   // Lambda definition
-  lambda: (api, [args, body]) => {
-    return ['fn', [args, body]]
+  lambda: (api, [params, body]) => {
+    return ['fn', [params, body]]
+  },
+  // Function composition operator
+  '.': (api, args) => {
+    // `(pipe x y z) -> (fn (param) (x (y (z param))`
+    return ['fn', [['param'], args.reduceRight((a, fn) => [fn, a], 'param')]]
+  },
+  // Inverse function composition operator
+  'pipe': (api, args) => {
+    // `(pipe x y z) -> (fn (param) (z (y (x param))`
+    return ['fn', [['param'], args.reduce((a, fn) => [fn, a], 'param')]]
   },
   // JS Math
   Math: (api, args) => {
