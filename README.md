@@ -1,6 +1,6 @@
 # Lisp-JS
 
-This library is a extendable interpreter / compiler for Lisp intended for use in any JS environment as a secure sandboxed execution runtime.
+This library is an extendable interpreter / compiler for Lisp intended for use in any JS environment as a secure sandboxed execution runtime.
 
 Example code:
 
@@ -37,6 +37,7 @@ console.log(result)
 - Make the build env with FuseBox :fire:
 - Implement a pausable interpreter
 - Make an example
+- Support for comments (`;`)
 - Implement code generation
 - Implement a code generator for WebAssembly
 
@@ -44,3 +45,7 @@ console.log(result)
 
 - Build a language for Fractal over JS
 - Be simple and performant
+
+## Docs
+
+- Syntax is described in SYNTAX.md
