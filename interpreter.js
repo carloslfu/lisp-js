@@ -118,6 +118,7 @@ const constants = {
 
 const atoms = {
   // Built in
+  // ---- Special Forms
   process: (api, args) => {
     let result
     api._pushScope()
@@ -125,7 +126,7 @@ const atoms = {
       if (arg instanceof Array) {
         result = api.evalAst(arg)
       } else if (i === len - 1) {
-        result = api.exp(arg)   
+        result = api.exp(arg)
       } else {
         return api.evalAst(['throw', `'process only can have lists as arguments'`])
       }
@@ -133,10 +134,6 @@ const atoms = {
     api._popScope()
     return result
   },
-  throw: (api, args) => {
-    throw args.map(a => api.exp(a)[1]).join(' ')
-  },
-  // ---- Special Forms
   // Constant definition
   def: (api, [name, exp]) => {
     if (name instanceof Array) {
@@ -165,8 +162,8 @@ const atoms = {
     name = name[0] === '.' ? name.slice(1) : api.exp(name)[1]
     let subj = Math[name]
     return typeof subj === 'function'
-      ? ['atom', subj.apply(null, args.slice(1).map(a => api.exp(a)[1]))]
-      : ['atom', subj]
+    ? ['atom', subj.apply(null, args.slice(1).map(a => api.exp(a)[1]))]
+    : ['atom', subj]
   },
   cond: (api, args) => {
     for (let i = 0, arg; arg = args[i]; i++) {
@@ -178,7 +175,11 @@ const atoms = {
     }
   },
   if: (api, [pred, con, alter]) => api.exp(pred)[1] ? api.exp(con) : api.exp(alter),
-  // ----  
+  // ----
+  // Error handling 
+  throw: (api, args) => {
+    throw args.map(a => api.exp(a)[1]).join(' ')
+  },
   // Mathematical
   '+': (api, args) => ['atom', args.reduce((a, n) => a + api.exp(n)[1], 0)],
   '-': (api, args) => ['atom', args.slice(1).reduce((a, n) => a - api.exp(n)[1], api.exp(args[0])[1])],
@@ -190,10 +191,21 @@ const atoms = {
   '=': (api, args) => ['atom', api.exp(args[0])[1] == api.exp(args[1])[1]],
   '<': (api, args) => ['atom', api.exp(args[0])[1] < api.exp(args[1])[1]],
   '<=': (api, args) => ['atom', api.exp(args[0])[1] <= api.exp(args[1])],
-  'xor': (api, args) => ['atom', api.exp(args[0])[1] ^ api.exp(args[1])[1]],
-  'not': (api, args) => ['atom', !api.exp(args[0])[1]],
-  'and': (api, args) => ['atom', args.reduce((a, n) => a && api.exp(n)[1], true)],
-  'or': (api, args) => ['atom',  args.reduce((a, n) => a || api.exp(n)[1], false)],
+  xor: (api, args) => ['atom', api.exp(args[0])[1] ^ api.exp(args[1])[1]],
+  not: (api, args) => ['atom', !api.exp(args[0])[1]],
+  and: (api, args) => ['atom', args.reduce((a, n) => a && api.exp(n)[1], true)],
+  or: (api, args) => ['atom',  args.reduce((a, n) => a || api.exp(n)[1], false)],
   // Strings
-  'cat': (api, args) => ['atom', args.reduce((a, n) => a + api.exp(n)[1], '')],
+  cat: (api, args) => ['atom', args.reduce((a, n) => a + api.exp(n)[1], '')],
+  // Key-Value structure
+  kv: (api, args) => {
+    let obj = {}
+    let evArgs = args.map((a, idx) => (idx % 2 === 1 || a instanceof Array) ? api.exp(a)[1] : a)
+    for (let i = 0, len = evArgs.length; i < len; i += 2) {
+      obj[evArgs[i]] = evArgs[i + 1]
+    }
+    return ['atom', obj]
+  },
+  // Key-Value structure
+  ls: (api, args) => ['atom', args.map(a => api.exp(a)[1])],
 }

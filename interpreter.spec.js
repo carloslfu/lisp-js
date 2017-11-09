@@ -2,7 +2,7 @@ var test = require('tape')
 var { evalAst, makeAPI } = require('./interpreter')
 
 test('interpreter', t => {
-  t.plan(21)
+  t.plan(24)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -242,6 +242,45 @@ test('interpreter', t => {
     ),
     ['atom', 12],
     'Inverse function composition operator'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['kv',
+        'key1', '"value1"',
+        'key2', '2',
+        'key3', '"value3"',
+      ],
+    ),
+    ['atom', { key1: 'value1', key2: 2, key3: 'value3' }],
+    'Key-Value (kv) constructor operator'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['kv',
+        'key1', '"value1"',
+        ['cat', '"key"', '2'], '2',
+        ['cat', '"key"', '3'], ['+', '1', '2'],
+        'key4', ['cat', '"value"', ['+', '2', '2']],
+      ],
+    ),
+    ['atom', { key1: 'value1', key2: 2, key3: 3, key4: 'value4' }],
+    'Key-Value (kv) constructor operator with evaluated arguments'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['ls',
+        '1',
+        ['+', '2', '3'],
+        '3',
+        '4',
+        ['-', '10', '5'],
+      ],
+    ),
+    ['atom', [1, 5, 3, 4, 5]],
+    'List (ls) constructor operator with evaluated arguments'
   )
 
 })
