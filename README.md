@@ -48,4 +48,4 @@ console.log(result)
 
 ## Docs
 
-- Syntax is described in SYNTAX.md
+- Language is described in LANGUAGE.md
