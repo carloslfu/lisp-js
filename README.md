@@ -24,9 +24,11 @@ const code = `
     (sqrt 9)
   )
 `
-let result = run({
+let env = {
   log: (api, args) => console.log.apply(null, args.map(a => api.exp(a)[1])),
-}, code)
+}
+
+let result = run(env)(code)
 
 console.log(result)
 ```
