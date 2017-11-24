@@ -32,13 +32,15 @@ console.log(result)
 
 ## Roadmap
 
-- Improve README and docs
-- Make the build env with FuseBox :fire:
 - Implement a pausable interpreter
-- Make an example
-- Support for comments (`;`)
+- Port to TypeScript
+- Make the build env with FuseBox :fire:
+- Improve README and docs
+- Support for comments (`;`) as a special form
 - Implement code generation
 - Implement a code generator for WebAssembly
+- Allow concurrent execution
+- Allow multi-threaded execution
 
 ## Goals
 

@@ -1,4 +1,5 @@
 const { stringDelimiters } = require('./tokenizer')
+const { reduceAsync } = require('./utils')
 
 // evaluate a primitive expression
 const exp = api => exp => {
@@ -25,6 +26,7 @@ const exp = api => exp => {
 const evalAst = api => ast => {
   // () = null
   if (ast.length === 0) {
+    api._popScope
     return ['atom', null]
   }
   let op = ast[0]
@@ -89,18 +91,42 @@ const getValue = (api, stack) => name => {
 
 const makeAPI = env => {
   let stack = []
+  let path = []
   let api = {
     env: {
       ...constants,
       ...env,
     },
+    _stack: stack,
     _pushScope: () => stack.push({}),
     _popScope: () => stack.pop(),
+    _path: path,
+    _pushPath: () => stack.push(0),
+    _popPath: () => stack.pop(),
   }
   api.evalAst = evalAst(api)
   api.exp = exp(api)
   api.getValue = getValue(api, stack)
   api.setValue = setValue(api, stack)
+  // Pausable stuff
+  let stepEnd = () => new Promise ((res, rej) => {
+    api.doStepEnd = res
+  })
+  const step = async value => {
+    if (api.doStepEnd) {
+      api.doStepEnd()
+      api.doStepEnd = undefined
+    }
+    return new Promise((res, rej) => {
+      api.doStep = () => {
+        res()
+        api.doStep = undefined
+        return value
+      }
+    })
+  }
+  api.step = step
+  api.stepEnd = stepEnd
   return api
 }
 
@@ -181,7 +207,10 @@ const atoms = {
     throw args.map(a => api.exp(a)[1]).join(' ')
   },
   // Mathematical
-  '+': (api, args) => ['atom', args.reduce((a, n) => a + api.exp(n)[1], 0)],
+  '+': async (api, args) => await ['atom', reduceAsync(args, async (a, n, idx) => {
+    await api.step(idx + 1)
+    return a + await api.exp(n)[1]
+  }, 0)],
   '-': (api, args) => ['atom', args.slice(1).reduce((a, n) => a - api.exp(n)[1], api.exp(args[0])[1])],
   '*': (api, args) => ['atom', args.reduce((a, n) => a * api.exp(n)[1], 1)],
   '/': (api, args) => ['atom', api.exp(args[0])[1] / args.slice(1).reduce((a, n) => a * api.exp(n)[1], 1)],

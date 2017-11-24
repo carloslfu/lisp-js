@@ -20,10 +20,12 @@ let stepEnd = () => new Promise ((res, rej) => {
 const step = async value => {
   if (doStepEnd) {
     doStepEnd()
+    doStepEnd = undefined
   }
   return new Promise((res, rej) => {
     doStep = () => {
       res()
+      doStep = undefined
       return value
     }
   })
@@ -32,14 +34,11 @@ const step = async value => {
 fn(step)
 
 ;(async () => {
-  console.log('STEP', doStep())
-  await stepEnd()
-  console.log('STEP', doStep())
-  await stepEnd()  
-  console.log('STEP', doStep())
-  await stepEnd()
-  console.log('STEP', doStep())
-  await stepEnd()
-  console.log('STEP', doStep())
-  await stepEnd()
+  while (doStep) {
+    console.log('STEP', doStep())
+    await stepEnd()
+    await new Promise((res, rej) => {
+      setTimeout(res, 1000)
+    })
+  }
 })()
