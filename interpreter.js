@@ -170,7 +170,7 @@ const atoms = {
       if (arg[0] === 'else') {
         return api.exp(arg[1])
       } else if (api.exp(arg[0])[1]) {
-        return api.exp(arg[1])        
+        return api.exp(arg[1])
       }
     }
   },
