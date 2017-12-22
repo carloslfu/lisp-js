@@ -22,7 +22,7 @@ export const exp = api => exp => {
 }
 
 // evaluate a list (AST)
-export const evalAst = api => ast => {
+export const evalAst = api => async ast => {
   // () = null
   if (ast.length === 0) {
     return ['atom', null]
@@ -42,12 +42,18 @@ export const evalAst = api => ast => {
     }
   }
   let fn = api.getValue(op)
-  if (fn !== undefined && fn[0] === 'fn') {
-    return evaluateFn(api, op, fn[1], args)
+  if (fn !== undefined) {
+    if (fn[0] === 'fn') {
+      return evaluateFn(api, op, fn[1], args)
+    } else if (typeof fn === 'function') {
+      return await fn(api, args)
+    } else {
+      return api.evalAst(['throw', `'The operation is not valid: ${op}'`])
+    }
   } else if (api.env[op]) {
-    return api.env[op](api, args)
+    return await api.env[op](api, args)
   } else if (atoms[op]) {
-    return atoms[op](api, args)
+    return await atoms[op](api, args)
   } else {
     return api.evalAst(['throw', `'The operation is not defined: ${op}'`])
   }
