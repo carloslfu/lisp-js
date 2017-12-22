@@ -35,7 +35,9 @@ Note that compound expressions can contain other expressions inside, those expre
 (myfunction 12 23)
 (myfunction 23 (otherfunction 12 34))
 ```
-## functions
+## Functions
+
+All function executions are awaited by default. Below are the built-in ones:
 
 `def` can be used in two ways, defining variables:
 ```lisp
@@ -133,7 +135,19 @@ Key-Value structure:
     keyNNameOrExp valueNExpression
 )
 ```
+
 Lists:
 ```lisp
 (ls expression1 expression2 ... expressionN)
 ```
+
+Get: get a path from a list or an object
+```lisp
+(get obj key1 ... keyN)
+```
+
+Set: set a path to a list or an object
+```lisp
+(set object key1 key2 ... keyN value)
+```
+
