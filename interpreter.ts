@@ -1,7 +1,7 @@
-const { stringDelimiters } = require('./tokenizer')
+import { stringDelimiters } from './tokenizer'
 
 // evaluate a primitive expression
-const exp = api => exp => {
+export const exp = api => exp => {
   if (exp instanceof Array) {
     return api.evalAst(exp)
   } else if (!isNaN(exp)) { // is a number
@@ -22,7 +22,7 @@ const exp = api => exp => {
 }
 
 // evaluate a list (AST)
-const evalAst = api => ast => {
+export const evalAst = api => ast => {
   // () = null
   if (ast.length === 0) {
     return ['atom', null]
@@ -53,7 +53,7 @@ const evalAst = api => ast => {
   }
 }
 
-function evaluateFn (api, name, [params, body], args) {
+export function evaluateFn (api, name, [params, body], args) {
   api._pushScope()
   let argsVal = args.map(api.exp)
   for (let i = 0, len = params.length; i < len; i++) {
@@ -68,12 +68,12 @@ function evaluateFn (api, name, [params, body], args) {
   return result
 }
 
-const setValue = (api, stack) => (name, value) => {
+export const setValue = (api, stack) => (name, value) => {
   let scope = stack[stack.length - 1]
   scope[name] = value
 }
 
-const getValue = (api, stack) => name => {
+export const getValue = (api, stack) => name => {
   let scope, i = stack.length - 1
   while (scope = stack[i]) {
     if (scope.hasOwnProperty(name)) {
@@ -87,9 +87,9 @@ const getValue = (api, stack) => name => {
   return undefined
 }
 
-const makeAPI = env => {
+export const makeAPI = env => {
   let stack = []
-  let api = {
+  let api: any = {
     env: {
       ...constants,
       ...env,
@@ -104,19 +104,12 @@ const makeAPI = env => {
   return api
 }
 
-module.exports = {
-  makeAPI,
-  getValue,
-  evalAst,
-  exp,
-}
-
-const constants = {
+export const constants = {
   'true': ['atom', true],
   'false': ['atom', false],
 }
 
-const atoms = {
+export const atoms = {
   // Built in
   // ---- Special Forms
   process: (api, args) => {
@@ -176,7 +169,7 @@ const atoms = {
   },
   if: (api, [pred, con, alter]) => api.exp(pred)[1] ? api.exp(con) : api.exp(alter),
   // ----
-  // Error handling 
+  // Error handling
   throw: (api, args) => {
     throw args.map(a => api.exp(a)[1]).join(' ')
   },

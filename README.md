@@ -33,7 +33,6 @@ console.log(result)
 ## Roadmap
 
 - Implement a pausable interpreter
-- Port to TypeScript
 - Make the build env with FuseBox :fire:
 - Improve README and docs
 - Support for comments (`;`) as a special form

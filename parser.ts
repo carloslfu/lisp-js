@@ -1,7 +1,7 @@
-const { openListDelimiters, closeListDelimiters } = require('./tokenizer')
+import { openListDelimiters, closeListDelimiters } from './tokenizer'
 
 // A node can be a list, atom, number, string
-function parse (tokens) {
+export function parse (tokens) {
   let list
   let path = []
   for (let i = 0, token; token = tokens[i]; i++) {
@@ -23,7 +23,7 @@ function parse (tokens) {
   return list
 }
 
-function getPath (path, tree) {
+export function getPath (path, tree) {
   let value = tree
   for (let i = 0, len = path.length; i < len; i++) {
     value = value[path[i]]
@@ -31,13 +31,7 @@ function getPath (path, tree) {
   return value
 }
 
-function setPath (value, path, tree) {
+export function setPath (value, path, tree) {
   getPath(path.slice(0, path.length - 1), tree)[path[path.length - 1]] = value
   return tree
-}
-
-module.exports = {
-  parse,
-  getPath,
-  setPath,
 }

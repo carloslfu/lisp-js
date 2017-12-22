@@ -6,9 +6,10 @@
         "sourceMap": true,
         "removeComments": false,
         "noUnusedLocals": true,
+        "outDir": "lib",
         "lib": ["dom", "es5", "es2015", "scripthost"],
         "typeRoots": [
-        "./node_modules/@types"
+            "./node_modules/@types"
         ]
     },
     "formatCodeOptions": {
@@ -16,10 +17,7 @@
         "tabSize": 2
     },
     "files": [
-        "app/index.ts",
-        "server/index.ts",
-        "app/service-worker.ts",
-        "typings/index.d.ts"
+        "index.ts"
     ],
     "exclude": [
         "node_modules"

@@ -1,5 +1,5 @@
-var test = require('tape')
-var { parse, getPath, setPath } = require('./parser')
+import test = require('tape')
+import { parse, getPath, setPath } from './parser'
 
 test('parse', function (t) {
   t.plan(2)

@@ -1,5 +1,5 @@
-var test = require('tape')
-var { tokenize } = require('./tokenizer')
+import test = require('tape')
+import { tokenize } from './tokenizer'
 
 test('tokenizer', function (t) {
   t.plan(2)

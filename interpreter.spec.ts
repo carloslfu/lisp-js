@@ -1,5 +1,5 @@
-var test = require('tape')
-var { evalAst, makeAPI } = require('./interpreter')
+import test = require('tape')
+import { evalAst, makeAPI } from './interpreter'
 
 test('interpreter', t => {
   t.plan(24)
@@ -9,7 +9,7 @@ test('interpreter', t => {
     ['atom', 6],
     'Simple expression'
   )
-  
+
   t.deepEqual(
     evalAst(makeAPI({}))(['*', '2', '3', ['-', '3', '4'], '2', ['/', '1', '2']]),
     ['atom', -6],

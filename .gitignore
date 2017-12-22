@@ -1,1 +1,29 @@
-node_modules
+# Project specific stuff
+dist/
+app/bundles.json
+.fusebox
+
+icons-bundle.css
+icons-bundle.svg
+icons-bundle.min.svg
+
+# npm stuff
+node_modules/
+npm-debug.log
+
+# Editor Stuff
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.bak
+*~
+
+# System stuff
+.DS_Store
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.directory

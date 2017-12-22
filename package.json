@@ -2,12 +2,13 @@
   "name": "lisp-js-compiler",
   "version": "0.0.1",
   "description": "JavaScript compiler / interpreter for Lisp language",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "node test"
   },
   "keywords": [
     "JavaScript",
+    "TypeScript",
     "Lisp",
     "Compiler",
     "Interpreter",
