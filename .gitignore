@@ -1,5 +1,5 @@
 # Project specific stuff
-dist/
+lib/
 app/bundles.json
 .fusebox
 
