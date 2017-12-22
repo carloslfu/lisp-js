@@ -32,6 +32,7 @@ console.log(result)
 
 ## Roadmap
 
+- Port pausable interpreter to TypeScript
 - Implement a pausable interpreter
 - Make the build env with FuseBox :fire:
 - Improve README and docs
