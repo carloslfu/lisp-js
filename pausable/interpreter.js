@@ -47,9 +47,9 @@ const evalAst = api => ast => {
   if (fn !== undefined && fn[0] === 'fn') {
     return evaluateFn(api, op, fn[1], args)
   } else if (api.env[op]) {
-    return api.env[op](api, args)
+    return await api.env[op](api, args)
   } else if (atoms[op]) {
-    return atoms[op](api, args)
+    return await atoms[op](api, args)
   } else {
     return api.evalAst(['throw', `'The operation is not defined: ${op}'`])
   }
