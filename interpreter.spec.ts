@@ -2,7 +2,7 @@ import test = require('tape')
 import { evalAst, makeAPI } from './interpreter'
 
 test('interpreter', t => {
-  t.plan(24)
+  t.plan(26)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -266,7 +266,7 @@ test('interpreter', t => {
       ],
     ),
     ['atom', { key1: 'value1', key2: 2, key3: 3, key4: 'value4' }],
-    'Key-Value (kv) constructor operator with evaluated arguments'
+    'Key-Value Object (kv) constructor operator with evaluated arguments'
   )
 
   t.deepEqual(
@@ -281,6 +281,32 @@ test('interpreter', t => {
     ),
     ['atom', [1, 5, 3, 4, 5]],
     'List (ls) constructor operator with evaluated arguments'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['get',
+        ['kv', 'key', ['kv', 'a', ['kv', 'b', 12]]],
+        '"key"', '"a"', '"b"',
+      ],
+    ),
+    ['atom', 12],
+    'Get (get) general getter for objects and lists'
+  )
+
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      ['process',
+        ['def',
+          'a',
+          ['kv', 'key', ['kv', 'a', ['kv', 'b', 9]]],
+        ],
+        ['set', 'a', '"key"', '"a"', '"b"', 21],
+        ['get', 'a', '"key"', '"a"', '"b"'],
+      ],
+    ),
+    ['atom', 21],
+    'Set (set) general setter for objects and lists'
   )
 
 })

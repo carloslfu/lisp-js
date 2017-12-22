@@ -201,4 +201,25 @@ export const atoms = {
   },
   // List structure
   ls: (api, args) => ['atom', args.map(a => api.exp(a)[1])],
+  get: (api, args) => {
+    let a = args.map(a => api.exp(a)[1])
+    let res = a[0]
+    console.log(a)
+    console.log(a[0])
+    for (let i = 1, len = a.length; i < len; i++) {
+      res = res[a[i]]
+    }
+    return ['atom', res]
+  },
+  set: (api, args) => {
+    let a = args.map(a => api.exp(a)[1])
+    let subj = a[0]
+    for (let i = 1, len = a.length - 2; i < len; i++) {
+      subj = subj[a[i]]
+    }
+    let lastKey = a[a.length - 2]
+    let value = a[a.length - 1]
+    subj[lastKey] = value
+    return ['atom', value]
+  },
 }
