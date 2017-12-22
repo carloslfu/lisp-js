@@ -2,7 +2,7 @@ import test = require('tape')
 import { evalAst, makeAPI } from './interpreter'
 
 test('interpreter', t => {
-  t.plan(26)
+  t.plan(27)
 
   t.deepEqual(
     evalAst(makeAPI({}))(['+', '1', '2', '3']),
@@ -210,18 +210,27 @@ test('interpreter', t => {
 
   t.deepEqual(
     evalAst(makeAPI({}))(
-      [['lambda', ['x', 'y'], ['+', 'x', 'y']], 23, 34],
+      [['->', ['x', 'y'], ['+', 'x', 'y']], 23, 34],
     ),
     ['atom', 57],
     'Lambda definition and application'
+  )
+
+  debugger
+  t.deepEqual(
+    evalAst(makeAPI({}))(
+      [['->', 'param', ['+', 'param', '10']], 23],
+    ),
+    ['atom', 33],
+    'Lambda definition and application (one parameter)'
   )
 
   t.deepEqual(
     evalAst(makeAPI({}))(
       [
         ['.',
-          ['lambda', ['x'], ['+', 'x', '1']],
-          ['lambda', ['x'], ['*', 'x', '3']],
+          ['->', ['x'], ['+', 'x', '1']],
+          ['->', ['x'], ['*', 'x', '3']],
         ],
         3
       ],
@@ -234,8 +243,8 @@ test('interpreter', t => {
     evalAst(makeAPI({}))(
       [
         ['pipe',
-          ['lambda', ['x'], ['+', 'x', '1']],
-          ['lambda', ['x'], ['*', 'x', '3']],
+          ['->', ['x'], ['+', 'x', '1']],
+          ['->', ['x'], ['*', 'x', '3']],
         ],
         3
       ],

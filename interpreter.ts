@@ -56,11 +56,19 @@ export const evalAst = api => ast => {
 export function evaluateFn (api, name, [params, body], args) {
   api._pushScope()
   let argsVal = args.map(api.exp)
-  for (let i = 0, len = params.length; i < len; i++) {
-    if (argsVal[i] !== undefined) {
-      api.setValue(params[i], argsVal[i])
+  if (params instanceof Array) {
+    for (let i = 0, len = params.length; i < len; i++) {
+      if (argsVal[i] !== undefined) {
+        api.setValue(params[i], argsVal[i])
+      } else {
+        return api.evalAst(['throw', `"Missing argument '${params[i]}' in function '${name}'"`])
+      }
+    }
+  } else {
+    if (argsVal[0] !== undefined) {
+      api.setValue(params, argsVal[0])
     } else {
-      return api.evalAst(['throw', `"Missing argument '${params[i]}' in function '${name}'"`])
+      return api.evalAst(['throw', `"Missing argument '${params[0]}' in function '${name}'"`])
     }
   }
   let result = api.exp(body)
@@ -136,7 +144,7 @@ export const atoms = {
     }
   },
   // Lambda definition
-  lambda: (api, [params, body]) => {
+  '->': (api, [params, body]) => {
     return ['fn', [params, body]]
   },
   // Function composition operator
@@ -204,8 +212,6 @@ export const atoms = {
   get: (api, args) => {
     let a = args.map(a => api.exp(a)[1])
     let res = a[0]
-    console.log(a)
-    console.log(a[0])
     for (let i = 1, len = a.length; i < len; i++) {
       res = res[a[i]]
     }

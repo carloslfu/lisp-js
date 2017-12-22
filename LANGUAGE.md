@@ -55,9 +55,10 @@ Or defining functions:
     returnExpression3
 )
 ```
-`lambda` define an anonimous function:
+`->` a lambda define an anonimous function:
 ```lisp
 (-> [param1 param2 ... paramN] expression)
+(-> param expression)
 ```
 Function composition:
 ```lisp
