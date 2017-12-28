@@ -89,9 +89,9 @@ Multiple conditional evaluation
     (booleanExpressionN resultExpresionN)
 )
 ```
-Mathematical functions
+## Mathematical functions
 
-Arithmetical
+### Arithmetical
 
 With N-arguments
 ```lisp
@@ -109,7 +109,7 @@ Substraction: `-`
 Product: `*`
 Division: `/`, `exp1 / (exp2 * exp3 * ... * expN)`
 
-Logical
+### Logical
 
 Greater: `>`, BINARY
 Greater or Equal`>=`, BINARY
@@ -125,19 +125,25 @@ Strings
 
 Concatenation: `cat`
 
-JavaScript related functions
+## JavaScript related functions
 
-JS Math
+### JS Math
 
 Math object: `Math`
+```lisp
+(Math x a1 a2 ... an) // Math[x](a1, a2, ..., an)
+(Math .log a1 a2 ... an) // Math.log(a1, a2, ..., an)
+```
+
+## Data Structures (abstractions)
 
 Key-Value structure:
 ```lisp
 (kv
-    key1NameOrExp value1Expression
-    key2NameOrExp value2Expression
-    ...
-    keyNNameOrExp valueNExpression
+  key1NameOrExp value1Expression
+  key2NameOrExp value2Expression
+  ...
+  keyNNameOrExp valueNExpression
 )
 ```
 
