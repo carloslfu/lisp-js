@@ -1,4 +1,8 @@
-# Language description
+# Language
+
+This languaje is sync by default, this means all is awaited. If you need to make something parallel or async must use special functions for this (built-in async functions comming soon)
+
+## Sintax
 
 There are 2 kind of expressions:
 

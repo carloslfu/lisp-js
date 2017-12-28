@@ -1,29 +1,29 @@
 import test = require('tape')
 import { evalAst, makeAPI } from './interpreter'
 
-test('interpreter', t => {
+test('interpreter', async t => {
   t.plan(27)
 
   t.deepEqual(
-    evalAst(makeAPI({}))(['+', '1', '2', '3']),
+    await evalAst(makeAPI({}))(['+', '1', '2', '3']),
     ['atom', 6],
     'Simple expression'
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(['*', '2', '3', ['-', '3', '4'], '2', ['/', '1', '2']]),
+    await evalAst(makeAPI({}))(['*', '2', '3', ['-', '3', '4'], '2', ['/', '1', '2']]),
     ['atom', -6],
     'Composed expression'
   )
 
   t.deepEqual(
-    evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(['*', 'x', 'y', ['-', '3', '4'], '2', ['/', '1', '2']]),
+    await evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(['*', 'x', 'y', ['-', '3', '4'], '2', ['/', '1', '2']]),
     ['atom', -15],
     'Composed expression with env constants'
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def', ['a1', 'x'], 'x'],
         [['cat', '"a"', '"1"'], 11],
@@ -34,7 +34,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(
+    await evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(
       ['process',
         ['def', 'a', '2'],
         ['def', 'b', '3'],
@@ -47,7 +47,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def', ['identity', 'x'], 'x'],
         ['identity', 7],
@@ -58,7 +58,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def',
           ['inc', 'x'],
@@ -72,7 +72,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def',
           ['sum', 'x', 'y'],
@@ -86,13 +86,13 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def',
           ['sqrtIter', 'x', 'guess'],
           ['if',
             ['=', ['Math', '.abs', ['-', 'x', ['*', 'guess', 'guess']]], 0],
-            'guess',
+            ['Math', '.floor', 'guess'],
             ['sqrtIter', 'x', ['/', ['+', 'guess', ['/', 'x', 'guess']], '2']],
           ],
         ],
@@ -108,19 +108,19 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(['+', ['*', '1', '2', '3'], '2', ['/', '27', '3', '3']]),
+    await evalAst(makeAPI({}))(['+', ['*', '1', '2', '3'], '2', ['/', '27', '3', '3']]),
     ['atom', 11],
     'Mathematical operators'
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(['or', ['and', 'true', ['>', '3', '4']], 'false', ['<', '27', '3'], ['or', 'true', 'false', 'false']]),
+    await evalAst(makeAPI({}))(['or', ['and', 'true', ['>', '3', '4']], 'false', ['<', '27', '3'], ['or', 'true', 'false', 'false']]),
     ['atom', true],
     'Logical operators'
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def', 'a', `'log'`],
         ['def', 'b', `'E'`],
@@ -132,18 +132,18 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['Math', '.log', ['Math', '.E']],
       ]
     ),
     ['atom', 1],
-    'Math operators with evaluated name'
+    'Math operators with known name'
   )
 
   // Special forms
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def', 'x', ['process',
           ['def', 'a', 2],
@@ -158,7 +158,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['cond',
         ['false', 2],
         [['>', 1, 2], 11],
@@ -172,7 +172,7 @@ test('interpreter', t => {
 
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['cond',
         ['false', 2],
         [['<', 10, 2], 11],
@@ -185,7 +185,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['if',
         ['<', 1, 2],
         10,
@@ -197,7 +197,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['if',
         ['>', 1, 2],
         10,
@@ -209,16 +209,15 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       [['->', ['x', 'y'], ['+', 'x', 'y']], 23, 34],
     ),
     ['atom', 57],
     'Lambda definition and application'
   )
 
-  debugger
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       [['->', 'param', ['+', 'param', '10']], 23],
     ),
     ['atom', 33],
@@ -226,7 +225,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       [
         ['.',
           ['->', ['x'], ['+', 'x', '1']],
@@ -240,7 +239,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       [
         ['pipe',
           ['->', ['x'], ['+', 'x', '1']],
@@ -254,7 +253,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['kv',
         'key1', '"value1"',
         'key2', '2',
@@ -266,7 +265,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['kv',
         'key1', '"value1"',
         ['cat', '"key"', '2'], '2',
@@ -279,7 +278,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['ls',
         '1',
         ['+', '2', '3'],
@@ -293,7 +292,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['get',
         ['kv', 'key', ['kv', 'a', ['kv', 'b', 12]]],
         '"key"', '"a"', '"b"',
@@ -304,7 +303,7 @@ test('interpreter', t => {
   )
 
   t.deepEqual(
-    evalAst(makeAPI({}))(
+    await evalAst(makeAPI({}))(
       ['process',
         ['def',
           'a',

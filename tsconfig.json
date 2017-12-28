@@ -1,26 +1,26 @@
 {
-    "compilerOptions": {
-        "target": "es2017",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "declaration": true,
-        "sourceMap": true,
-        "removeComments": false,
-        "noUnusedLocals": true,
-        "outDir": "lib",
-        "lib": ["dom", "es5", "es2015", "scripthost"],
-        "typeRoots": [
-            "./node_modules/@types"
-        ]
-    },
-    "formatCodeOptions": {
-        "indentSize": 2,
-        "tabSize": 2
-    },
-    "files": [
-        "index.ts"
-    ],
-    "exclude": [
-        "node_modules"
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "lib": ["dom", "es5", "es2015", "scripthost"],
+    "typeRoots": [
+      "./node_modules/@types"
     ]
+  },
+  "formatCodeOptions": {
+    "indentSize": 2,
+    "tabSize": 2
+  },
+  "files": [
+    "index.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

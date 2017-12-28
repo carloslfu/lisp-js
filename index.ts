@@ -8,5 +8,5 @@ export function getAst (code) {
 
 export const run = env => {
   let _evalAst = evalAst(makeAPI(env))
-  return code => _evalAst(getAst(code))
+  return async code => await _evalAst(getAst(code))
 }
