@@ -24,7 +24,6 @@ export const exp =  api => async exp => {
 
 // evaluate a list (AST)
 export const evalAst = api => async ast => {
-  debugger
   // () = null
   if (ast.length === 0) {
     return null
