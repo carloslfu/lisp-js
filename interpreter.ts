@@ -1,17 +1,17 @@
 import { stringDelimiters } from './tokenizer'
-import { expArgs, mapAsync, reduceAsync } from './utils'
+import { expArgs, mapAsync, reduceAsync, reduceRightAsync } from './utils'
 
 // evaluate a primitive expression
 export const exp =  api => async exp => {
   if (exp instanceof Array) {
     return await api.evalAst(exp)
   } else if (!isNaN(exp)) { // is a number
-    return ['atom', parseFloat(exp)]
+    return parseFloat(exp)
   } else if (
     stringDelimiters.indexOf(exp[0]) !== -1
     && stringDelimiters.indexOf(exp[exp.length - 1]) !== -1
   ) {
-    return ['atom', exp.slice(1, exp.length - 1)]
+    return exp.slice(1, exp.length - 1)
   } else { // constant
     let value = api.getValue(exp)
     if (value !== undefined) {
@@ -24,9 +24,10 @@ export const exp =  api => async exp => {
 
 // evaluate a list (AST)
 export const evalAst = api => async ast => {
+  debugger
   // () = null
   if (ast.length === 0) {
-    return ['atom', null]
+    return null
   }
   let op = ast[0]
   let args = ast.slice(1, ast.length)
@@ -36,17 +37,13 @@ export const evalAst = api => async ast => {
   if (op instanceof Array) { // op expression
     op = await api.exp(op)
     // lambda evaluation
-    if (op[0] === 'fn') {
-      return await evaluateFn(api, 'lambda', op[1], args)
-    } else if (op[0] === 'atom') {
-      op = op[1]
+    if (typeof op === 'function') {
+      return await op(api, args) // evaluateFn(api, 'lambda', op[1], args)
     }
   }
   let fn = api.getValue(op)
   if (fn !== undefined) {
-    if (fn[0] === 'fn') {
-      return await evaluateFn(api, op, fn[1], args)
-    } else if (typeof fn === 'function') {
+    if (typeof fn === 'function') {
       return await fn(api, args)
     } else {
       return await api.evalAst(['throw', `'The operation is not valid: ${op}'`])
@@ -57,7 +54,10 @@ export const evalAst = api => async ast => {
 }
 
 export async function evaluateFn (api, name, [params, body], args) {
-  api._pushScope()
+  let _api = {...api}
+  // Clone stack for clousure
+  _api._stack = _api._stack.map(l => ({...l}))
+  _api._pushScope()
   let argsVal = await mapAsync(args, api.exp)
   if (params instanceof Array) {
     for (let i = 0, len = params.length; i < len; i++) {
@@ -99,26 +99,26 @@ export const getValue = (api, stack) => name => {
 }
 
 export const makeAPI = env => {
-  let stack = []
   let api: any = {
     env: {
       ...constants,
       ...atoms,
       ...env,
     },
-    _pushScope: () => stack.push({}),
-    _popScope: () => stack.pop(),
+    _stack: [],
+    _pushScope: () => api._stack.push({}),
+    _popScope: () => api._stack.pop(),
   }
   api.evalAst = evalAst(api)
   api.exp = exp(api)
-  api.getValue = getValue(api, stack)
-  api.setValue = setValue(api, stack)
+  api.getValue = getValue(api, api._stack)
+  api.setValue = setValue(api, api._stack)
   return api
 }
 
 export const constants = {
-  'true': ['atom', true],
-  'false': ['atom', false],
+  'true': true,
+  'false': false,
 }
 
 export const atoms = {
@@ -142,88 +142,86 @@ export const atoms = {
   // Constant definition
   def: async (api, [name, exp]) => {
     if (name instanceof Array) {
-      api.setValue(name[0], ['fn', [name.slice(1), exp]])
+      api.setValue(name[0], async (api, args) => await evaluateFn(api, 'lambda', [name.slice(1), exp], args))
     } else {
       api.setValue(name, await api.exp(exp))
     }
   },
   // Lambda definition
   '->': (api, [params, body]) => {
-    return ['fn', [params, body]]
+    return async (api, args) => await evaluateFn(api, 'lambda', [params, body], args)
   },
   // Function composition operator
-  '.': (api, args) => {
-    // `(. x y z) -> (fn (param) (x (y (z param))`
-    return ['fn', [['param'], args.reduceRight((a, fn) => [fn, a], 'param')]]
+  '.': (api, fns) => {
+    return async (api, args) => await reduceRightAsync(fns, async (a, fn, i) => await (await api.exp(fn))(api, i === (fns.length - 1) ? a : [a]), args)
   },
   // Inverse function composition operator
-  'pipe': (api, args) => {
-    // `(pipe x y z) -> (fn (param) (z (y (x param))`
-    return ['fn', [['param'], args.reduce((a, fn) => [fn, a], 'param')]]
+  'pipe': (api, fns) => {
+    return async (api, args) => await reduceAsync(fns, async (a, fn, i) => await (await api.exp(fn))(api, i === 0 ? a : [a]), args)
   },
   // JS Math (TODO: Doc)
   Math: async (api, args) => {
     let name = args[0]
-    name = name[0] === '.' ? name.slice(1) : (await api.exp(name))[1]
+    name = name[0] === '.' ? name.slice(1) : await api.exp(name)
     let subj = Math[name]
     let fnArgs = await expArgs(api, args.slice(1))
     return typeof subj === 'function'
-      ? ['atom', subj.apply(null, fnArgs)]
-      : ['atom', subj]
+      ? subj.apply(null, fnArgs)
+      : subj
   },
   cond: async (api, args) => {
     for (let i = 0, arg; arg = args[i]; i++) {
       if (arg[0] === 'else') {
         return await api.exp(arg[1])
-      } else if ((await api.exp(arg[0]))[1]) {
+      } else if (await api.exp(arg[0])) {
         return await api.exp(arg[1])
       }
     }
   },
-  if: async (api, [pred, con, alter]) => (await api.exp(pred))[1] ? await api.exp(con) : await api.exp(alter),
+  if: async (api, [pred, con, alter]) => await api.exp(pred) ? await api.exp(con) : await api.exp(alter),
   // ----
   // Error handling
   throw: async (api, args) => {
-    throw (await mapAsync(args, async a => (await api.exp(a))[1])).join(' ')
+    throw (await mapAsync(args, async a => await api.exp(a))).join(' ')
   },
   // Mathematical
-  '+': async (api, args) => ['atom', await reduceAsync(args, async (a, n) => a + (await api.exp(n))[1], 0)],
-  '-': async (api, args) => ['atom', await reduceAsync(args.slice(1), async (a, n) => a - (await api.exp(n))[1], (await api.exp(args[0]))[1])],
-  '*': async (api, args) => ['atom', await reduceAsync(args, async (a, n) => a * (await api.exp(n))[1], 1)],
-  '/': async (api, args) => ['atom', (await api.exp(args[0]))[1] / await reduceAsync(args.slice(1), async (a, n) => a * (await api.exp(n))[1], 1)],
+  '+': async (api, args) => await reduceAsync(args, async (a, n) => a + await api.exp(n), 0),
+  '-': async (api, args) => await reduceAsync(args.slice(1), async (a, n) => a - await api.exp(n), await api.exp(args[0])),
+  '*': async (api, args) => await reduceAsync(args, async (a, n) => a * (await api.exp(n)), 1),
+  '/': async (api, args) => await api.exp(args[0]) / await reduceAsync(args.slice(1), async (a, n) => a * await api.exp(n), 1),
   // Logical
-  '>': async (api, args) => ['atom', (await api.exp(args[0]))[1] > (await api.exp(args[1]))[1]],
-  '>=': async (api, args) => ['atom', (await api.exp(args[0]))[1] >= (await api.exp(args[1]))[1]],
-  '=': async (api, args) => ['atom', (await api.exp(args[0]))[1] == (await api.exp(args[1]))[1]],
-  '<': async (api, args) => ['atom', (await api.exp(args[0]))[1] < (await api.exp(args[1]))[1]],
-  '<=': async (api, args) => ['atom', (await api.exp(args[0]))[1] <= (await api.exp(args[1]))],
-  xor: async (api, args) => ['atom', (await api.exp(args[0]))[1] ^ (await api.exp(args[1]))[1]],
-  not: async (api, args) => ['atom', !(await api.exp(args[0]))[1]],
-  and: async (api, args) => ['atom', await reduceAsync(args, async (a, n) => a && (await api.exp(n))[1], true)],
-  or: async (api, args) => ['atom',  await reduceAsync(args, async (a, n) => a || (await api.exp(n))[1], false)],
+  '>': async (api, args) => await api.exp(args[0]) > await api.exp(args[1]),
+  '>=': async (api, args) => await api.exp(args[0]) >= await api.exp(args[1]),
+  '=': async (api, args) => await api.exp(args[0]) == await api.exp(args[1]),
+  '<': async (api, args) => await api.exp(args[0]) < await api.exp(args[1]),
+  '<=': async (api, args) => await api.exp(args[0]) <= await api.exp(args[1]),
+  xor: async (api, args) => await api.exp(args[0]) ^ await api.exp(args[1]),
+  not: async (api, args) => !await api.exp(args[0]),
+  and: async (api, args) => await reduceAsync(args, async (a, n) => a && await api.exp(n), true),
+  or: async (api, args) =>  await reduceAsync(args, async (a, n) => a || await api.exp(n), false),
   // Strings
-  cat: async (api, args) => ['atom', await reduceAsync(args, async (a, n) => a + (await api.exp(n))[1], '')],
+  cat: async (api, args) => await reduceAsync(args, async (a, n) => a + await api.exp(n), ''),
   // Key-Value structure
   kv: async (api, args) => {
     let obj = {}
-    let evArgs = await mapAsync(args, async (a, idx) => (idx % 2 === 1 || a instanceof Array) ? (await api.exp(a))[1] : a)
+    let evArgs = await mapAsync(args, async (a, idx) => (idx % 2 === 1 || a instanceof Array) ? await api.exp(a) : a)
     for (let i = 0, len = evArgs.length; i < len; i += 2) {
       obj[evArgs[i]] = evArgs[i + 1]
     }
-    return ['atom', obj]
+    return obj
   },
   // List structure
-  ls: async (api, args) => ['atom', await mapAsync(args, async a => (await api.exp(a))[1])],
+  ls: async (api, args) => await mapAsync(args, async a => await api.exp(a)),
   get: async (api, args) => {
-    let a = await mapAsync(args, async a => (await api.exp(a))[1])
+    let a = await mapAsync(args, async a => await api.exp(a))
     let res = a[0]
     for (let i = 1, len = a.length; i < len; i++) {
       res = res[a[i]]
     }
-    return ['atom', res]
+    return res
   },
   set: async (api, args) => {
-    let a = await mapAsync(args, async a => (await api.exp(a))[1])
+    let a = await mapAsync(args, async a => await api.exp(a))
     let subj = a[0]
     for (let i = 1, len = a.length - 2; i < len; i++) {
       subj = subj[a[i]]
@@ -231,6 +229,6 @@ export const atoms = {
     let lastKey = a[a.length - 2]
     let value = a[a.length - 1]
     subj[lastKey] = value
-    return ['atom', value]
+    return value
   },
 }

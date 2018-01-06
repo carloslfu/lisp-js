@@ -6,19 +6,19 @@ test('interpreter', async t => {
 
   t.deepEqual(
     await evalAst(makeAPI({}))(['+', '1', '2', '3']),
-    ['atom', 6],
+    6,
     'Simple expression'
   )
 
   t.deepEqual(
     await evalAst(makeAPI({}))(['*', '2', '3', ['-', '3', '4'], '2', ['/', '1', '2']]),
-    ['atom', -6],
+    -6,
     'Composed expression'
   )
 
   t.deepEqual(
-    await evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(['*', 'x', 'y', ['-', '3', '4'], '2', ['/', '1', '2']]),
-    ['atom', -15],
+    await evalAst(makeAPI({ x: 5, y: 3 }))(['*', 'x', 'y', ['-', '3', '4'], '2', ['/', '1', '2']]),
+    -15,
     'Composed expression with env constants'
   )
 
@@ -29,12 +29,12 @@ test('interpreter', async t => {
         [['cat', '"a"', '"1"'], 11],
       ],
     ),
-    ['atom', 11],
+    11,
     'Computed operation name'
   )
 
   t.deepEqual(
-    await evalAst(makeAPI({ x: ['atom', 5], y: ['atom', 3] }))(
+    await evalAst(makeAPI({ x: 5, y: 3 }))(
       ['process',
         ['def', 'a', '2'],
         ['def', 'b', '3'],
@@ -42,7 +42,7 @@ test('interpreter', async t => {
         ['+', 'y', 'x'],
       ]
     ),
-    ['atom', 17],
+    17,
     'Process expression with env constants'
   )
 
@@ -53,7 +53,7 @@ test('interpreter', async t => {
         ['identity', 7],
       ]
     ),
-    ['atom', 7],
+    7,
     'Identity procedure definition / application'
   )
 
@@ -67,7 +67,7 @@ test('interpreter', async t => {
         ['inc', 7],
       ]
     ),
-    ['atom', 8],
+    8,
     'Procedure declaration / application'
   )
 
@@ -81,7 +81,7 @@ test('interpreter', async t => {
         ['sum', 7, 8],
       ]
     ),
-    ['atom', 15],
+    15,
     'Multiparameter procedure declaration / application'
   )
 
@@ -103,19 +103,19 @@ test('interpreter', async t => {
         ['sqrt', 9],
       ]
     ),
-    ['atom', 3],
+    3,
     'Procedure recursion'
   )
 
   t.deepEqual(
     await evalAst(makeAPI({}))(['+', ['*', '1', '2', '3'], '2', ['/', '27', '3', '3']]),
-    ['atom', 11],
+    11,
     'Mathematical operators'
   )
 
   t.deepEqual(
     await evalAst(makeAPI({}))(['or', ['and', 'true', ['>', '3', '4']], 'false', ['<', '27', '3'], ['or', 'true', 'false', 'false']]),
-    ['atom', true],
+    true,
     'Logical operators'
   )
 
@@ -127,7 +127,7 @@ test('interpreter', async t => {
         ['Math', 'a', ['Math', 'b']],
       ]
     ),
-    ['atom', 1],
+    1,
     'Math operators with evaluated name'
   )
 
@@ -137,7 +137,7 @@ test('interpreter', async t => {
         ['Math', '.log', ['Math', '.E']],
       ]
     ),
-    ['atom', 1],
+    1,
     'Math operators with known name'
   )
 
@@ -153,7 +153,7 @@ test('interpreter', async t => {
         ['+', 'x', 8],
       ]
     ),
-    ['atom', 20],
+    20,
     'Process application / definition'
   )
 
@@ -166,7 +166,7 @@ test('interpreter', async t => {
         ['else', ['+', 12, 3]],
       ]
     ),
-    ['atom', 10],
+    10,
     'Case analysis'
   )
 
@@ -180,7 +180,7 @@ test('interpreter', async t => {
         ['else', ['+', 12, 3]],
       ]
     ),
-    ['atom', 15],
+    15,
     'Case analysis - else'
   )
 
@@ -192,7 +192,7 @@ test('interpreter', async t => {
         ['+', 12, 3],
       ]
     ),
-    ['atom', 10],
+    10,
     'Conditional'
   )
 
@@ -204,7 +204,7 @@ test('interpreter', async t => {
         ['+', 12, 3],
       ]
     ),
-    ['atom', 15],
+    15,
     'Conditional - else'
   )
 
@@ -212,7 +212,7 @@ test('interpreter', async t => {
     await evalAst(makeAPI({}))(
       [['->', ['x', 'y'], ['+', 'x', 'y']], 23, 34],
     ),
-    ['atom', 57],
+    57,
     'Lambda definition and application'
   )
 
@@ -220,7 +220,7 @@ test('interpreter', async t => {
     await evalAst(makeAPI({}))(
       [['->', 'param', ['+', 'param', '10']], 23],
     ),
-    ['atom', 33],
+    33,
     'Lambda definition and application (one parameter)'
   )
 
@@ -234,7 +234,7 @@ test('interpreter', async t => {
         3
       ],
     ),
-    ['atom', 10],
+    10,
     'Function composition operator'
   )
 
@@ -248,7 +248,7 @@ test('interpreter', async t => {
         3
       ],
     ),
-    ['atom', 12],
+    12,
     'Inverse function composition operator'
   )
 
@@ -260,7 +260,7 @@ test('interpreter', async t => {
         'key3', '"value3"',
       ],
     ),
-    ['atom', { key1: 'value1', key2: 2, key3: 'value3' }],
+    { key1: 'value1', key2: 2, key3: 'value3' },
     'Key-Value (kv) constructor operator'
   )
 
@@ -273,7 +273,7 @@ test('interpreter', async t => {
         'key4', ['cat', '"value"', ['+', '2', '2']],
       ],
     ),
-    ['atom', { key1: 'value1', key2: 2, key3: 3, key4: 'value4' }],
+    { key1: 'value1', key2: 2, key3: 3, key4: 'value4' },
     'Key-Value Object (kv) constructor operator with evaluated arguments'
   )
 
@@ -287,7 +287,7 @@ test('interpreter', async t => {
         ['-', '10', '5'],
       ],
     ),
-    ['atom', [1, 5, 3, 4, 5]],
+    [1, 5, 3, 4, 5],
     'List (ls) constructor operator with evaluated arguments'
   )
 
@@ -298,7 +298,7 @@ test('interpreter', async t => {
         '"key"', '"a"', '"b"',
       ],
     ),
-    ['atom', 12],
+    12,
     'Get (get) general getter for objects and lists'
   )
 
@@ -313,7 +313,7 @@ test('interpreter', async t => {
         ['get', 'a', '"key"', '"a"', '"b"'],
       ],
     ),
-    ['atom', 21],
+    21,
     'Set (set) general setter for objects and lists'
   )
 

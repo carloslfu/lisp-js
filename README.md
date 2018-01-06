@@ -34,7 +34,6 @@ console.log(result)
 
 - Port pausable interpreter to TypeScript
 - Implement a pausable interpreter
-- Make the build env with FuseBox :fire:
 - Improve README and docs
 - Support for comments (`;`) as a special form
 - Implement code generation
@@ -50,3 +49,7 @@ console.log(result)
 ## Docs
 
 - Language is described in LANGUAGE.md
+
+## TODOs
+
+- Tests lambdas to capture values

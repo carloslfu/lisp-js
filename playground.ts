@@ -8,7 +8,7 @@ const code = `
 `
 
 let env = {
-  log: (api, args) => console.log.apply(null, args.map(a => api.exp(a)[1])),
+  log: (api, args) => console.log.apply(null, args.map(a => api.exp(a))),
 }
 
 ;(async () => {

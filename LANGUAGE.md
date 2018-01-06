@@ -59,7 +59,7 @@ Or defining functions:
     returnExpression3
 )
 ```
-`->` a lambda define an anonimous function:
+`->` a lambda define an anonimous function without capture:
 ```lisp
 (-> [param1 param2 ... paramN] expression)
 (-> param expression)
