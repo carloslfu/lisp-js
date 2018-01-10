@@ -2,27 +2,28 @@ import test = require('tape')
 import { evalAst, makeAPI } from './interpreter'
 
 test('interpreter', async t => {
-  t.plan(27)
 
-  t.deepEqual(
+  t.plan(29)
+
+  t.equal(
     await evalAst(makeAPI({}))(['+', '1', '2', '3']),
     6,
     'Simple expression'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(['*', '2', '3', ['-', '3', '4'], '2', ['/', '1', '2']]),
     -6,
     'Composed expression'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({ x: 5, y: 3 }))(['*', 'x', 'y', ['-', '3', '4'], '2', ['/', '1', '2']]),
     -15,
     'Composed expression with env constants'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def', ['a1', 'x'], 'x'],
@@ -33,7 +34,7 @@ test('interpreter', async t => {
     'Computed operation name'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({ x: 5, y: 3 }))(
       ['process',
         ['def', 'a', '2'],
@@ -46,7 +47,7 @@ test('interpreter', async t => {
     'Process expression with env constants'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def', ['identity', 'x'], 'x'],
@@ -57,7 +58,7 @@ test('interpreter', async t => {
     'Identity procedure definition / application'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def',
@@ -71,7 +72,7 @@ test('interpreter', async t => {
     'Procedure declaration / application'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def',
@@ -85,7 +86,7 @@ test('interpreter', async t => {
     'Multiparameter procedure declaration / application'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def',
@@ -107,19 +108,19 @@ test('interpreter', async t => {
     'Procedure recursion'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(['+', ['*', '1', '2', '3'], '2', ['/', '27', '3', '3']]),
     11,
     'Mathematical operators'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(['or', ['and', 'true', ['>', '3', '4']], 'false', ['<', '27', '3'], ['or', 'true', 'false', 'false']]),
     true,
     'Logical operators'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def', 'a', `'log'`],
@@ -131,7 +132,7 @@ test('interpreter', async t => {
     'Math operators with evaluated name'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['Math', '.log', ['Math', '.E']],
@@ -142,7 +143,7 @@ test('interpreter', async t => {
   )
 
   // Special forms
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def', 'x', ['process',
@@ -157,7 +158,7 @@ test('interpreter', async t => {
     'Process application / definition'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['cond',
         ['false', 2],
@@ -171,7 +172,7 @@ test('interpreter', async t => {
   )
 
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['cond',
         ['false', 2],
@@ -184,7 +185,7 @@ test('interpreter', async t => {
     'Case analysis - else'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['if',
         ['<', 1, 2],
@@ -196,7 +197,7 @@ test('interpreter', async t => {
     'Conditional'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['if',
         ['>', 1, 2],
@@ -208,7 +209,7 @@ test('interpreter', async t => {
     'Conditional - else'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       [['->', ['x', 'y'], ['+', 'x', 'y']], 23, 34],
     ),
@@ -216,7 +217,7 @@ test('interpreter', async t => {
     'Lambda definition and application'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       [['->', 'param', ['+', 'param', '10']], 23],
     ),
@@ -224,7 +225,7 @@ test('interpreter', async t => {
     'Lambda definition and application (one parameter)'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       [
         ['.',
@@ -238,7 +239,7 @@ test('interpreter', async t => {
     'Function composition operator'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       [
         ['pipe',
@@ -291,7 +292,7 @@ test('interpreter', async t => {
     'List (ls) constructor operator with evaluated arguments'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['get',
         ['kv', 'key', ['kv', 'a', ['kv', 'b', 12]]],
@@ -302,7 +303,7 @@ test('interpreter', async t => {
     'Get (get) general getter for objects and lists'
   )
 
-  t.deepEqual(
+  t.equal(
     await evalAst(makeAPI({}))(
       ['process',
         ['def',
@@ -315,6 +316,30 @@ test('interpreter', async t => {
     ),
     21,
     'Set (set) general setter for objects and lists'
+  )
+
+  // JS Interop
+
+  t.equal(
+    await evalAst(makeAPI({ fn: async function (x) { return await this.exp(x) + 1 } }))(
+      ['process',
+        ['fn', '23'],
+      ],
+    ),
+    24,
+    'Interop: Should evaluate an environment function'
+  )
+
+  debugger
+  let api = makeAPI({})
+  let fn = await evalAst(api)(
+    ['->', ['x'], ['+', 'x', '1']],
+  )
+
+  t.equal(
+    await fn.apply(api, [3]),
+    4,
+    'Interop: Should execute returned functions'
   )
 
 })

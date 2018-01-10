@@ -37,13 +37,13 @@ export const evalAst = api => async ast => {
     op = await api.exp(op)
     // lambda evaluation
     if (typeof op === 'function') {
-      return await op(api, args) // evaluateFn(api, 'lambda', op[1], args)
+      return await op.apply(api, args)
     }
   }
   let fn = api.getValue(op)
   if (fn !== undefined) {
     if (typeof fn === 'function') {
-      return await fn(api, args)
+      return await fn.apply(api, args)
     } else {
       return await api.evalAst(['throw', `'The operation is not valid: ${op}'`])
     }
@@ -123,104 +123,137 @@ export const constants = {
 export const atoms = {
   // Built in
   // ---- Special Forms
-  process: async (api, args) => {
+  process: async function (...args) {
     let result
-    api._pushScope()
+    this._pushScope()
     for (let i = 0, len = args.length, arg; arg = args[i]; i++) {
       if (arg instanceof Array) {
-        result = await api.evalAst(arg)
+        result = await this.evalAst(arg)
       } else if (i === len - 1) {
-        result = await api.exp(arg)
+        result = await this.exp(arg)
       } else {
-        return await api.evalAst(['throw', `'process only can have lists as arguments'`])
+        return await this.evalAst(['throw', `'process only can have lists as arguments'`])
       }
     }
-    api._popScope()
+    this._popScope()
     return result
   },
   // Constant definition
-  def: async (api, [name, exp]) => {
+  def: async function (name, exp) {
     if (name instanceof Array) {
-      api.setValue(name[0], async (api, args) => await evaluateFn(api, 'lambda', [name.slice(1), exp], args))
+      let fn = async (...args) => await evaluateFn(this, 'lambda', [name.slice(1), exp], args)
+      this.setValue(name[0], fn)
     } else {
-      api.setValue(name, await api.exp(exp))
+      this.setValue(name, await this.exp(exp))
     }
   },
   // Lambda definition
-  '->': (api, [params, body]) => {
-    return async (api, args) => await evaluateFn(api, 'lambda', [params, body], args)
+  '->': function (params, body) {
+    return async (...args) => await evaluateFn(this, 'lambda', [params, body], args)
   },
   // Function composition operator
-  '.': (api, fns) => {
-    return async (api, args) => await reduceRightAsync(fns, async (a, fn, i) => await (await api.exp(fn))(api, i === (fns.length - 1) ? a : [a]), args)
+  '.': function (...fns) {
+    return async (...args) => await reduceRightAsync(fns, async (a, fn, i) => await (await this.exp(fn)).apply(this, i === (fns.length - 1) ? a : [a]), args)
   },
   // Inverse function composition operator
-  'pipe': (api, fns) => {
-    return async (api, args) => await reduceAsync(fns, async (a, fn, i) => await (await api.exp(fn))(api, i === 0 ? a : [a]), args)
+  'pipe': function (...fns) {
+    return async (...args) => await reduceAsync(fns, async (a, fn, i) => await (await this.exp(fn)).apply(this, i === 0 ? a : [a]), args)
   },
   // JS Math (TODO: Doc)
-  Math: async (api, args) => {
+  Math: async function (...args) {
     let name = args[0]
-    name = name[0] === '.' ? name.slice(1) : await api.exp(name)
+    name = name[0] === '.' ? name.slice(1) : await this.exp(name)
     let subj = Math[name]
-    let fnArgs = await expArgs(api, args.slice(1))
+    let fnArgs = await expArgs(this, args.slice(1))
     return typeof subj === 'function'
       ? subj.apply(null, fnArgs)
       : subj
   },
-  cond: async (api, args) => {
+  cond: async function (...args) {
     for (let i = 0, arg; arg = args[i]; i++) {
       if (arg[0] === 'else') {
-        return await api.exp(arg[1])
-      } else if (await api.exp(arg[0])) {
-        return await api.exp(arg[1])
+        return await this.exp(arg[1])
+      } else if (await this.exp(arg[0])) {
+        return await this.exp(arg[1])
       }
     }
   },
-  if: async (api, [pred, con, alter]) => await api.exp(pred) ? await api.exp(con) : await api.exp(alter),
+  if: async function (pred, con, alter) {
+    return await this.exp(pred) ? await this.exp(con) : await this.exp(alter)
+  },
   // ----
   // Error handling
-  throw: async (api, args) => {
-    throw (await mapAsync(args, async a => await api.exp(a))).join(' ')
+  throw: async function (...args) {
+    throw (await mapAsync(args, async a => await this.exp(a))).join(' ')
   },
   // Mathematical
-  '+': async (api, args) => await reduceAsync(args, async (a, n) => a + await api.exp(n), 0),
-  '-': async (api, args) => await reduceAsync(args.slice(1), async (a, n) => a - await api.exp(n), await api.exp(args[0])),
-  '*': async (api, args) => await reduceAsync(args, async (a, n) => a * (await api.exp(n)), 1),
-  '/': async (api, args) => await api.exp(args[0]) / await reduceAsync(args.slice(1), async (a, n) => a * await api.exp(n), 1),
+  '+': async function (...args) {
+    return await reduceAsync(args, async (a, n) => a + await this.exp(n), 0)
+  },
+  '-': async function (...args) {
+    return await reduceAsync(args.slice(1), async (a, n) => a - await this.exp(n), await this.exp(args[0]))
+  },
+  '*': async function (...args) {
+    return await reduceAsync(args, async (a, n) => a * (await this.exp(n)), 1)
+  },
+  '/': async function (...args) {
+    return await this.exp(args[0]) / await reduceAsync(args.slice(1), async (a, n) => a * await this.exp(n), 1)
+  },
   // Logical
-  '>': async (api, args) => await api.exp(args[0]) > await api.exp(args[1]),
-  '>=': async (api, args) => await api.exp(args[0]) >= await api.exp(args[1]),
-  '=': async (api, args) => await api.exp(args[0]) == await api.exp(args[1]),
-  '<': async (api, args) => await api.exp(args[0]) < await api.exp(args[1]),
-  '<=': async (api, args) => await api.exp(args[0]) <= await api.exp(args[1]),
-  xor: async (api, args) => await api.exp(args[0]) ^ await api.exp(args[1]),
-  not: async (api, args) => !await api.exp(args[0]),
-  and: async (api, args) => await reduceAsync(args, async (a, n) => a && await api.exp(n), true),
-  or: async (api, args) =>  await reduceAsync(args, async (a, n) => a || await api.exp(n), false),
+  '>': async function (...args) {
+    return await this.exp(args[0]) > await this.exp(args[1])
+  },
+  '>=': async function (...args) {
+    return await this.exp(args[0]) >= await this.exp(args[1])
+  },
+  '=': async function (...args) {
+    return await this.exp(args[0]) == await this.exp(args[1])
+  },
+  '<': async function (...args) {
+    return await this.exp(args[0]) < await this.exp(args[1])
+  },
+  '<=': async function (...args) {
+    return await this.exp(args[0]) <= await this.exp(args[1])
+  },
+  xor: async function (...args) {
+    return await this.exp(args[0]) ^ await this.exp(args[1])
+  },
+  not: async function (...args) {
+    return !await this.exp(args[0])
+  },
+  and: async function (...args) {
+    return await reduceAsync(args, async (a, n) => a && await this.exp(n), true)
+  },
+  or: async function (...args) {
+    return  await reduceAsync(args, async (a, n) => a || await this.exp(n), false)
+  },
   // Strings
-  cat: async (api, args) => await reduceAsync(args, async (a, n) => a + await api.exp(n), ''),
+  cat: async function (...args) {
+    return await reduceAsync(args, async (a, n) => a + await this.exp(n), '')
+  },
   // Key-Value structure
-  kv: async (api, args) => {
+  kv: async function (...args) {
     let obj = {}
-    let evArgs = await mapAsync(args, async (a, idx) => (idx % 2 === 1 || a instanceof Array) ? await api.exp(a) : a)
+    let evArgs = await mapAsync(args, async (a, idx) => (idx % 2 === 1 || a instanceof Array) ? await this.exp(a) : a)
     for (let i = 0, len = evArgs.length; i < len; i += 2) {
       obj[evArgs[i]] = evArgs[i + 1]
     }
     return obj
   },
   // List structure
-  ls: async (api, args) => await mapAsync(args, async a => await api.exp(a)),
-  get: async (api, args) => {
-    let a = await mapAsync(args, async a => await api.exp(a))
+  ls: async function (...args) {
+    return await mapAsync(args, async a => await this.exp(a))
+  },
+  get: async function (...args) {
+    let a = await mapAsync(args, async a => await this.exp(a))
     let res = a[0]
     for (let i = 1, len = a.length; i < len; i++) {
       res = res[a[i]]
     }
     return res
   },
-  set: async (api, args) => {
-    let a = await mapAsync(args, async a => await api.exp(a))
+  set: async function (...args) {
+    let a = await mapAsync(args, async a => await this.exp(a))
     let subj = a[0]
     for (let i = 1, len = a.length - 2; i < len; i++) {
       subj = subj[a[i]]
