@@ -333,7 +333,7 @@ test('interpreter', async t => {
   debugger
   let api = makeAPI({})
   let fn = await evalAst(api)(
-    ['->', ['x'], ['+', 'x', '1']],
+    ['->', 'x', ['+', 'x', '1']],
   )
 
   t.equal(
