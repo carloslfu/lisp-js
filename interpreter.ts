@@ -70,7 +70,7 @@ export async function evaluateFn (api, name, [params, body], args) {
     if (argsVal[0] !== undefined) {
       api.setValue(params, argsVal[0])
     } else {
-      return await await api.evalAst(['throw', `"Missing argument '${params[0]}' in function '${name}'"`])
+      return await api.evalAst(['throw', `"Missing argument '${params[0]}' in function '${name}'"`])
     }
   }
   let result = await api.exp(body)
