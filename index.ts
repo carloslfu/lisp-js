@@ -10,3 +10,5 @@ export const run = env => {
   let _evalAst = evalAst(makeAPI(env))
   return async code => await _evalAst(getAst(code))
 }
+
+export * from './js-interop'
