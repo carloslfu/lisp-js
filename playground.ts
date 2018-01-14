@@ -2,13 +2,13 @@ import { run } from './index'
 import { wrapObj } from './js-interop'
 
 let env = wrapObj({
-  highFn: async obj => (await obj.root(10)) + 1,
+  highFn: async obj => (await obj.root({a:3})) + 1,
 })
 
 const code = `
   (process
     (highFn (kv
-      root (-> x (+ x 1))
+      root (-> obj (+ (get obj 'a') 1))
     ))
   )
 `

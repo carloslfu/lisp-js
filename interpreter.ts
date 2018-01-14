@@ -7,6 +7,8 @@ export const exp =  api => async exp => {
     return await api.evalAst(exp)
   } else if (!isNaN(exp)) { // is a number
     return parseFloat(exp)
+  } else if (typeof exp === 'object' || typeof exp === 'function') {
+    return exp
   } else if (
     stringDelimiters.indexOf(exp[0]) !== -1
     && stringDelimiters.indexOf(exp[exp.length - 1]) !== -1
